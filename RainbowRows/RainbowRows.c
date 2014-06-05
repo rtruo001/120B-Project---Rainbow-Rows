@@ -8,7 +8,9 @@
 
 #include <avr/io.h>
 #include "timer.h"
+#include <stdio.h>
 #include <stdlib.h>
+#include <avr/interrupt.h>
 
 void transmit_data(signed long data) {
 	int i;
@@ -132,8 +134,80 @@ int SM1_Tick(int state) {
 	return state;
 }
 
-enum To_Start_Game_State {Game_Init, Game_Wait, Game_Start} Game_State;
+//This variable starts the entire process of randomizing for the LED matrix.
+//The seed would be used with the rand() function to choose Red, Green, or Blue for the color.
 signed short seed_randomize = 1;
+const unsigned char RED_LIGHT = 0;
+const unsigned char GREEN_LIGHT = 1;
+const unsigned char BLUE_LIGHT = 2;
+
+signed long col_states[8] = {0x01FFFFFF, 0x02FFFFFF, 0x04FFFFFF, 0x08FFFFFF, 0x10FFFFFF, 0x20FFFFFF, 0x40FFFFFF, 0x80FFFFFF};
+void Init_LED()
+{
+	col_states[0] = 0x01FFFFFF;
+	col_states[1] = 0x02FFFFFF;
+	col_states[2] = 0x04FFFFFF;
+	col_states[3] = 0x08FFFFFF;
+	col_states[4] = 0x10FFFFFF;
+	col_states[5] = 0x20FFFFFF;
+	col_states[6] = 0x40FFFFFF;
+	col_states[7] = 0x80FFFFFF;
+	//This variable is initialized as an LED with all columns and rows turned off except the first column.
+	signed long var_init_LED = 0x01FFFFFF;
+	//The following variables are initialized to which bits would be Red, Green, or Blue.
+	signed long red_mask = 0x01FFFFFE;
+	signed long green_mask = 0x01FEFFFF;
+	signed long blue_mask = 0x01FFFEFF;
+	signed short rand_num = 0;
+	
+	for (unsigned char i = 0; i < 8; ++i)
+	{
+		for (unsigned char j = 0; j < 8; ++j)
+		{
+			//var_init_LED
+			if (seed_randomize >= 1000)
+			{
+				seed_randomize = 1;
+			}
+			else
+			{
+				++seed_randomize;
+			}
+			
+			rand_num = rand() % 3;
+			if (rand_num == RED_LIGHT)
+			{
+				col_states[i] = var_init_LED & (col_states[i] & red_mask);
+			}
+			else if (rand_num == GREEN_LIGHT)
+			{
+				col_states[i] = var_init_LED & (col_states[i] & green_mask);
+			}
+			else if (rand_num == BLUE_LIGHT)
+			{
+				col_states[i] = var_init_LED & (col_states[i] & blue_mask);
+			}
+
+			red_mask = (var_init_LED & 0xFF000000) | (((red_mask << 1) | 0x00000001) & 0x00FFFFFF);
+			green_mask = (var_init_LED & 0xFF000000) | (((green_mask << 1) | 0x00000001) & 0x00FFFFFF);
+			blue_mask = (var_init_LED & 0xFF000000) | (((blue_mask << 1) | 0x00000001) & 0x00FFFFFF);
+		}
+		var_init_LED = ((var_init_LED & 0xFF000000) << 1) | 0x00FFFFFF;
+		red_mask = (var_init_LED & 0xFF000000) | 0x00FFFFFE;
+		green_mask = (var_init_LED & 0xFF000000) | 0x00FEFFFF;
+		blue_mask = (var_init_LED & 0xFF000000) | 0x00FFFEFF;
+	}
+}
+
+/***********************************************************************
+ *Function void Starting_Game()
+ *The state machine in where you start the game by pushing start
+ *If don't push start, will continue to wait until user push starts
+************************************************************************/
+//States for the function to use.
+enum To_Start_Game_State {Game_Init, Game_Wait, Game_Start} Game_State;
+//This variable would start the entire process of the actual game when it changes to 1
+//It will only change to 1 if the user pushes start at the beginning.
 unsigned short state_of_game = 0;
 void Starting_Game()
 {
@@ -144,18 +218,20 @@ void Starting_Game()
 			Game_State = Game_Wait;
 			break;
 		case Game_Wait:
-			if (seed_randomize >= RAND_MAX)
+			if (seed_randomize >= 10000)
 			{
 				seed_randomize = 1;
 			}
 			else
 			{
-				++seed_randomize;
+				seed_randomize = (seed_randomize * 2) + 1;
 			}
 			if ((button & Start_Button) == 0x00)
 			{
 				//Here comes the exciting part
 				state_of_game = 1;
+				srand(seed_randomize);
+				Init_LED();
 				Game_State = Game_Start;
 			}
 			else
@@ -188,12 +264,6 @@ void Starting_Game()
 	}
 }
 
-signed long col_states[8] = {0, 0, 0, 0, 0, 0, 0, 0}; 
-void Init_LED()
-{
-		
-}
-
 /*************************************************************************************************
  *Function: void LED_MATRIX() 
  *Summary: Would show each column of the LED matrix, with the timer set at 2
@@ -205,7 +275,16 @@ void Init_LED()
 //This variable would choose which column the LED Matrix would display
 signed long display_lights = 0x00000000;
 //The states of the LED matrix, displaying a column at a time.
-enum LED_States{LED_Init, col0, col1, col2, col3, col4, col5, col6, col7} LED_State;
+enum LED_States{LED_Init, 
+				col0, col0_off,
+				col1, col1_off,
+				col2, col2_off,
+				col3, col3_off,
+				col4, col4_off,
+				col5, col5_off,
+				col6, col6_off,
+				col7, col7_off
+				} LED_State;
 	
 void LED_Matrix()
 {
@@ -216,35 +295,51 @@ void LED_Matrix()
 			LED_State = col0;
 			break;
 		case col0:
-			display_lights = 0x01000000;
+			LED_State = col0_off;
+			break;
+		case col0_off:
 			LED_State = col1;
 			break;
 		case col1:
-			display_lights = 0x02000000;
+			LED_State = col1_off;
+			break;
+		case col1_off:
 			LED_State = col2;
 			break;
 		case col2:
-			display_lights = 0x04000000;
+			LED_State = col2_off;
+			break;
+		case col2_off:
 			LED_State = col3;
 			break;
 		case col3:
-			display_lights = 0x08000000;
+			LED_State = col3_off;
+			break;
+		case col3_off:
 			LED_State = col4;
 			break;
 		case col4:
-			display_lights = 0x10000000;
+			LED_State = col4_off;
+			break;
+		case col4_off:
 			LED_State = col5;
 			break;
 		case col5:
-			display_lights = 0x20000000;
+			LED_State = col5_off;
+			break;
+		case col5_off:
 			LED_State = col6;
 			break;
 		case col6:
-			display_lights = 0x40000000;
+			LED_State = col6_off;
+			break;
+		case col6_off:
 			LED_State = col7;
 			break;
 		case col7:
-			display_lights = 0x80000000;
+			LED_State = col7_off;
+			break;
+		case col7_off:
 			LED_State = col0;
 			break;
 		default:
@@ -258,20 +353,52 @@ void LED_Matrix()
 		case LED_Init:
 			break;
 		case col0:
+			display_lights = col_states[0];
 			break;
 		case col1:
+			display_lights = col_states[1];
 			break;
 		case col2:
+			display_lights = col_states[2];
 			break;
 		case col3:
+			display_lights = col_states[3];
 			break;
 		case col4:
+			display_lights = col_states[4];
 			break;
 		case col5:
+			display_lights = col_states[5];
 			break;
 		case col6:
+			display_lights = col_states[6];
 			break;
 		case col7:
+			display_lights = col_states[7];
+			break;
+		case col0_off:
+			display_lights = 0x00FFFFFFFF;
+			break;
+		case col1_off:
+			display_lights = 0x00FFFFFFFF;
+			break;
+		case col2_off:
+			display_lights = 0x00FFFFFFFF;
+			break;
+		case col3_off:
+			display_lights = 0x00FFFFFFFF;
+			break;
+		case col4_off:
+			display_lights = 0x00FFFFFFFF;
+			break;
+		case col5_off:
+			display_lights = 0x00FFFFFFFF;
+			break;
+		case col6_off:
+			display_lights = 0x00FFFFFFFF;
+			break;
+		case col7_off:
+			display_lights = 0x00FFFFFFFF;
 			break;
 		default:
 			break;
@@ -292,7 +419,7 @@ void Player_Cursor()
 	}
 	else
 	{
-		if (seed_randomize >= RAND_MAX)
+		if (seed_randomize >= 1000)
 		{
 			//Restarts the seed to 1 for randomizing
 			seed_randomize = 1;	
@@ -356,11 +483,11 @@ int main(void)
 	DDRD = 0xFE; PORTD = 0x01;
 	
 	
-	signed long lights = 0x0067BBDC;
+	//signed long lights = 0x0067BBDC;
 	//unsigned char add = -1;
 	//unsigned char LED = 0xFF;
 	
-	TimerSet(2);
+	TimerSet(1);
 	TimerOn();
 	//int state = sm1_display;
 	LED_State = LED_Init;
@@ -375,15 +502,12 @@ int main(void)
 		NES_Controller();
 		if (state_of_game == 0)
 		{
-
 			Starting_Game();
 		}
 		else
 		{
 			LED_Matrix();
-			lights |= (display_lights & 0xFFFFFFFF);
-			transmit_data(lights & 0xFFFFFFFF);
-			lights &= 0x00FFFFFF;
+			transmit_data(display_lights & 0xFFFFFFFF);
 		}
 		while (!TimerFlag);
 		TimerFlag = 0;
