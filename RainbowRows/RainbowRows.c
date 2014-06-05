@@ -8,6 +8,7 @@
 
 #include <avr/io.h>
 #include "timer.h"
+#include <stdlib.h>
 
 void transmit_data(signed long data) {
 	int i;
@@ -36,220 +37,23 @@ enum NES_states {NES_Init,
 				 Left1, Left0, 
 				 Right1, Right0} NES_state;
 
-unsigned char NES_latch = 0;
-unsigned char NES_pulse = 0;
 unsigned short button = 0x00;
 
+const unsigned short A_Button = 0x02;
+const unsigned short B_Button = 0x04;
+const unsigned short Select_Button = 0x08;
+const unsigned short Start_Button = 0x10;
+const unsigned short Up_Button = 0x20;
+const unsigned short Down_Button = 0x40;
+const unsigned short Left_Button = 0x80;
+const unsigned short Right_Button = 0x01;
+
 void NES_Controller()
-{	/*
-	//Transitions
-	switch (NES_state)
-	{
-		case NES_Init:
-			NES_state = A1;
-			break;
-		case A1:
-			NES_latch = 1;
-			NES_pulse = 0;
-			NES_state = A0;
-		//	PORTC = 0x01;
-			break;
-		case A0:
-			NES_latch = 0;
-			NES_pulse = 0;
-			NES_state = B1;
-			break;
-		case B1:
-			NES_latch = 0;
-			NES_pulse = 1;
-			NES_state = B0;
-		//	PORTC = 0x00;
-			break;
-		case B0:
-			NES_latch = 0;
-			NES_pulse = 0;
-			NES_state = Select1;
-			break;
-		case Select1:
-			NES_latch = 0;
-			NES_pulse = 1;
-			NES_state = Select0;
-		//	PORTC = 0x01;
-			break;
-		case Select0:
-			NES_latch = 0;
-			NES_pulse = 0;
-			NES_state = Start1;
-			break;
-		case Start1:
-			NES_latch = 0;
-			NES_pulse = 1;
-			NES_state = Start0;
-		//	PORTC = 0x00;
-			break;
-		case Start0:
-			NES_latch = 0;
-			NES_pulse = 0;
-			NES_state = Up1;
-			break;
-		case Up1:
-			NES_latch = 0;
-			NES_pulse = 1;
-			NES_state = Up0;
-			//			PORTC = 0x01;
-			break;
-		case Up0:
-			NES_latch = 0;
-			NES_pulse = 0;
-			NES_state = Down1;
-			break;
-		case Down1:
-			NES_latch = 0;
-			NES_pulse = 1;
-			NES_state = Down0;
-					//	PORTC = 0x00;
-			break;
-		case Down0:
-			NES_latch = 0;
-			NES_pulse = 0;
-			NES_state = Left1;
-			break;
-		case Left1:
-			NES_latch = 0;
-			NES_pulse = 1;
-			NES_state = Left0;
-					//	PORTC = 0x01;
-			break;
-		case Left0:
-			NES_latch = 0;
-			NES_pulse = 0;
-			NES_state = Right1;
-			break;
-		case Right1:
-			NES_latch = 0;
-			NES_pulse = 1;
-			NES_state = Right0;
-				//		PORTC = 0x00;
-			break;
-		case Right0:
-			NES_latch = 0;
-			NES_pulse = 0;
-			NES_state = A1;
-			break;
-		default:
-			NES_state = NES_Init;
-			break;
-	}
+{	
+	unsigned char NES_latch = 0;
+	unsigned char NES_pulse = 0;
+	button = 0;
 	
-	//Setting the Ports of the controller appropriately.
-	PORTD |= ((PORTD & 0x02) | (NES_latch << 1)) | ((PORTD & 0x04) | (NES_pulse << 2));
-	//PORTD |= (PORTD & 0x04) | (NES_pulse << 2);
-	
-	unsigned char Data_in = PIND;
-	
-	//ACTIONS
-	switch(NES_state)
-	{
-		case NES_Init:
-			break;
-		case A1:
-			if (Data_in & 0x01){
-				button |= 0x01;
-			//	PORTC = 0x01;
-			}
-			else
-			{
-				button &= (~0x01) & 0xFF;
-			}
-			break;
-		case A0:
-			break;
-		case B1:
-			if (Data_in & 0x01){
-				button |= 0x02;
-			//	PORTC = 0x02;
-			}
-			else
-			{
-				button &= (~0x02) & 0xFF;
-			}
-		case B0:
-			break;
-		case Select1:
-			if (Data_in & 0x01){
-				button |= 0x04;
-			//	PORTC = 0x04;
-			}
-			else
-			{
-				button &= (~0x04) & 0xFF;
-			}
-			break;
-		case Select0:
-			break;
-		case Start1:
-			if (Data_in & 0x01){
-				button |= 0x08;
-			//	PORTC = 0x08;
-			}
-			else
-			{
-				button &= (~0x08) & 0xFF;
-			}
-			break;
-		case Start0:
-			break;
-		case Up1:
-			if (Data_in & 0x01){
-				button |= 0x10;
-			//	PORTC = 0x10;
-			}
-			else
-			{
-				button &= (~0x10) & 0xFF;
-			}
-			break;
-		case Up0:
-			break;
-		case Down1:
-			if (Data_in & 0x01){
-				button |= 0x20;
-			//	PORTC = 0x20;
-			}
-			else
-			{
-				button &= (~0x20) & 0xFF;
-			}
-			break;
-		case Down0:
-			break;
-		case Left1:
-			if (Data_in & 0x01){
-				button |= 0x40;
-			//	PORTC = 0x40;
-			}
-			else
-			{
-				button &= (~0x40) & 0xFF;
-			}
-			break;
-		case Left0:
-			break;
-		case Right1:
-			if (Data_in & 0x01){
-				button |= 0x80;
-			//	PORTC = 0x80;
-			}
-			else
-			{
-				button &= (~0x80) & 0xFF;
-			}
-			break;
-		case Right0:
-			break;
-		default:
-			break;
-	}*/
 	for (unsigned char i = 8; i > 0; i--)
 	{
 		if (i == 8)
@@ -280,79 +84,6 @@ void NES_Controller()
 			}
 			PORTD = 0x00;
 		}
-	}
-	
-	if (button == 0xFF)
-	{
-		PORTC = 0x00;
-	}
-	else
-	{
-		if ((button & 0x01) == 0x00)
-		{
-			PORTC |= 0x01;
-		}
-		else
-		{
-			PORTC &= (~0x01) & 0xFF;
-		}
-		if ((button & 0x02) == 0x00)
-		{
-			PORTC |= 0x02;
-		}
-		else
-		{
-			PORTC &= (~0x02) & 0xFF;
-		}
-		if ((button & 0x04) == 0x00)
-		{
-			PORTC |= 0x04;
-		}
-		else
-		{
-			PORTC &= (~0x04) & 0xFF;
-		}
-		if ((button & 0x08) == 0x00)
-		{
-			PORTC |= 0x08;
-		}
-		else
-		{
-			PORTC &= (~0x08) & 0xFF;
-		}
-		if ((button & 0x10) == 0x00)
-		{
-			PORTC |= 0x10;
-		}
-		else
-		{
-			PORTC &= (~0x10) & 0xFF;
-		}
-		if ((button & 0x20) == 0x00)
-		{
-			PORTC |= 0x20;
-		}
-		else
-		{
-			PORTC &= (~0x20) & 0xFF;
-		}
-		if ((button & 0x40) == 0x00)
-		{
-			PORTC |= 0x40;
-		}
-		else
-		{
-			PORTC &= (~0x40) & 0xFF;
-		}
-		if ((button & 0x80) == 0x00)
-		{
-			PORTC |= 0x80;
-		}
-		else
-		{
-			PORTC &= (~0x80) & 0xFF;
-		}
-		button = 0x00;
 	}
 }
 
@@ -401,26 +132,259 @@ int SM1_Tick(int state) {
 	return state;
 }
 
+enum To_Start_Game_State {Game_Init, Game_Wait, Game_Start} Game_State;
+signed short seed_randomize = 1;
+unsigned short state_of_game = 0;
+void Starting_Game()
+{
+	//Transitions
+	switch(Game_State)
+	{
+		case Game_Init:
+			Game_State = Game_Wait;
+			break;
+		case Game_Wait:
+			if (seed_randomize >= RAND_MAX)
+			{
+				seed_randomize = 1;
+			}
+			else
+			{
+				++seed_randomize;
+			}
+			if ((button & Start_Button) == 0x00)
+			{
+				//Here comes the exciting part
+				state_of_game = 1;
+				Game_State = Game_Start;
+			}
+			else
+			{
+				Game_State = Game_Wait;
+			}
+			break;
+		case Game_Start:
+			if (state_of_game == 0)
+			{
+				Game_State = Game_Init;
+			}
+			break;
+		default:
+			Game_State = Game_Init;
+			break;
+	}
+	
+	//Actions
+	switch(Game_State)
+	{
+		case Game_Init:
+			break;
+		case Game_Wait:
+			break;
+		case Game_Start:
+			break;
+		default:
+			break;
+	}
+}
+
+signed long col_states[8] = {0, 0, 0, 0, 0, 0, 0, 0}; 
+void Init_LED()
+{
+		
+}
+
+/*************************************************************************************************
+ *Function: void LED_MATRIX() 
+ *Summary: Would show each column of the LED matrix, with the timer set at 2
+  the LED matrix would look like it is displaying everything at once
+  but the moving rows would be quick to the invisible eye. 
+ *FSM: 9 states including the init state, traversing the columns of an 8x8 RGB LED matrix.
+  Does this by setting display_lights to the row it will display.
+ *************************************************************************************************/
+//This variable would choose which column the LED Matrix would display
+signed long display_lights = 0x00000000;
+//The states of the LED matrix, displaying a column at a time.
+enum LED_States{LED_Init, col0, col1, col2, col3, col4, col5, col6, col7} LED_State;
+	
+void LED_Matrix()
+{
+	//Transitions
+	switch(LED_State)
+	{
+		case LED_Init:
+			LED_State = col0;
+			break;
+		case col0:
+			display_lights = 0x01000000;
+			LED_State = col1;
+			break;
+		case col1:
+			display_lights = 0x02000000;
+			LED_State = col2;
+			break;
+		case col2:
+			display_lights = 0x04000000;
+			LED_State = col3;
+			break;
+		case col3:
+			display_lights = 0x08000000;
+			LED_State = col4;
+			break;
+		case col4:
+			display_lights = 0x10000000;
+			LED_State = col5;
+			break;
+		case col5:
+			display_lights = 0x20000000;
+			LED_State = col6;
+			break;
+		case col6:
+			display_lights = 0x40000000;
+			LED_State = col7;
+			break;
+		case col7:
+			display_lights = 0x80000000;
+			LED_State = col0;
+			break;
+		default:
+			LED_State = LED_Init;
+			break;
+	}
+	
+	//Actions
+	switch(LED_State)
+	{
+		case LED_Init:
+			break;
+		case col0:
+			break;
+		case col1:
+			break;
+		case col2:
+			break;
+		case col3:
+			break;
+		case col4:
+			break;
+		case col5:
+			break;
+		case col6:
+			break;
+		case col7:
+			break;
+		default:
+			break;
+	}
+}
+
+//counts down to when a
+unsigned short blink_count = 400;
+void Player_Cursor()
+{
+	if(1)
+	{
+		blink_count = 400;
+	}
+	else if(1)
+	{
+		blink_count = 400;
+	}
+	else
+	{
+		if (seed_randomize >= RAND_MAX)
+		{
+			//Restarts the seed to 1 for randomizing
+			seed_randomize = 1;	
+		}
+		else
+		{
+			++seed_randomize;
+		}
+		blink_count--;
+		if(blink_count <= 0)
+		{
+			
+		}
+	}
+}
+
+/*******************************************************************************
+NOTES:
+Example of what bits represent what
+ 
+0xFF123456 
+
+FF -- The columns 
+
+The rows:
+12 -- Green
+34 -- Blue
+56 -- Red
+
+The rows are active low, meaning 0 is on and 1 is off.
+**********************************************************************************/
+/*The following represents a small diagram of the placement of the matrix.
+
+ROWS
+bit 7 _
+bit 6 _
+bit 5 _
+bit 4 _
+bit 3 _
+bit 2 _
+bit 1 _
+bit 0 _ L
+        _  _  _  _  _  _  _  _
+        0  1  2  3  4  5  6  7 COLS
+
+The L would be on if it is 0x01000000
+and if the 0, 8, or 16 bit is 0.
+
+0 bit for the color red
+8 bit for blue
+16 bit for green.
+Can have multiple of them be 0 for combination of colors.
+
+PS: Green mostly overpowers the other colors.
+************************************************************************************/
 int main(void)
 {
 	//DDRA = 0xFF; PORTA = 0x00;
 	DDRB = 0xFF; PORTB = 0x00;
-	//DDRD = 0x00; PORTD = 0xFF;
 	//DDRC = 0xFF; PORTC = 0x00;
-	//DDRD = 0xFE; PORTD = 0x01;
+	DDRD = 0xFE; PORTD = 0x01;
 	
-	signed long lights = 0xFFFF00FF;
+	
+	signed long lights = 0x0067BBDC;
 	//unsigned char add = -1;
 	//unsigned char LED = 0xFF;
 	
-	TimerSet(100);
+	TimerSet(2);
 	TimerOn();
 	//int state = sm1_display;
+	LED_State = LED_Init;
     while(1)
     {
-		//NES_Controller();
-		//SM1_Tick(state);
-		transmit_data(lights & 0xFFFFFFFF);
+		/*TODO
+		
+		IF GAME END
+		state_of_game = 0;
+		
+		*/
+		NES_Controller();
+		if (state_of_game == 0)
+		{
+
+			Starting_Game();
+		}
+		else
+		{
+			LED_Matrix();
+			lights |= (display_lights & 0xFFFFFFFF);
+			transmit_data(lights & 0xFFFFFFFF);
+			lights &= 0x00FFFFFF;
+		}
 		while (!TimerFlag);
 		TimerFlag = 0;
 		
