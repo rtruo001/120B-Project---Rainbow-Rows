@@ -12,23 +12,9 @@
 #include <stdlib.h>
 #include <avr/interrupt.h>
 
-void transmit_data(signed long data) {
-	int i;
-	for (i = 0; i < 32 ; ++i) {
-		// Sets SRCLR to 1 allowing data to be set
-		// Also clears SRCLK in preparation of sending data
-		PORTB = 0x08;
-		// set SER = next bit of data to be sent.
-		PORTB |= ((data >> i) & 0x01);
-		// set SRCLK = 1. Rising edge shifts next bit of data into the shift register
-		PORTB |= 0x02;
-	}
-	// set RCLK = 1. Rising edge copies data from “Shift” register to “Storage” register
-	PORTB |= 0x04;
-	// clears all lines in preparation of a new transmission
-	PORTB = 0x00;
-}
 
+
+/*******************************************NES CONTROLLER**************************************************/
 enum NES_states {NES_Init,
 				 A1, A0,
 				 B1, B0,
@@ -39,8 +25,18 @@ enum NES_states {NES_Init,
 				 Left1, Left0, 
 				 Right1, Right0} NES_state;
 
+/*
+button would be used throughout the entire program.
+Would be the source in describing which button is pressed.
+
+Goes like this:
+
+Button: Left Down Up  Start Select B    A  Right
+Bits:    7    6	   5    4     3    2    1    0
+*/
 unsigned short button = 0x00;
 
+//Constant variables for each button and their representations by their bits.
 const unsigned short A_Button = 0x02;
 const unsigned short B_Button = 0x04;
 const unsigned short Select_Button = 0x08;
@@ -87,6 +83,28 @@ void NES_Controller()
 			PORTD = 0x00;
 		}
 	}
+}
+
+/************************************SHIFT REGISTER FUNCTION**********************************
+ *Summary: Converts the pins of a microcontroller and forms it into a 32 bit port. This allows 
+  the usage of the 8x8 LED RGB Matrix. This uses 4 shift registers, each shift register gives 
+  an extra 8 bits.
+*********************************************************************************************/
+void transmit_data(signed long data) {
+	int i;
+	for (i = 0; i < 32 ; ++i) {
+		// Sets SRCLR to 1 allowing data to be set
+		// Also clears SRCLK in preparation of sending data
+		PORTB = 0x08;
+		// set SER = next bit of data to be sent.
+		PORTB |= ((data >> i) & 0x01);
+		// set SRCLK = 1. Rising edge shifts next bit of data into the shift register
+		PORTB |= 0x02;
+	}
+	// set RCLK = 1. Rising edge copies data from “Shift” register to “Storage” register
+	PORTB |= 0x04;
+	// clears all lines in preparation of a new transmission
+	PORTB = 0x00;
 }
 
 // ====================
@@ -469,6 +487,11 @@ unsigned short y = 0x01;
 
 signed long cursor_green_mask = 0x01010000;
 signed long	cursor_blue_mask = 0x01000100;
+signed long row_green_mask = 0x00010000;
+signed long row_blue_mask = 0x00000100;
+signed long to_check_swap = 0xFFFCFCFF;
+signed long swap_green_to_blue = 0x00010200;
+signed long swap_blue_to_green = 0x00020100;
 unsigned char cursor_color = -1;
 enum Cursor_States{Cursor_Init, Wait_For_Buttons, Up_State, Down_State, Left_State, Right_State} Cursor_State;
 void Player_Cursor()
@@ -496,18 +519,18 @@ void Player_Cursor()
 					--x;
 					if (cursor_color == GREEN_LIGHT)
 					{
-						if ((col_states[x] & 0x00010000) != 0)
+						if ((col_states[x] & row_green_mask) != 0)
 						{
-							col_states[x+1] = (col_states[x+1] | 0x00010000) & 0xFFFFFEFF;
-							col_states[x] = (col_states[x] | 0x00000100) & 0xFFFEFFFF;
+							col_states[x+1] = (col_states[x+1] | row_green_mask) & ~row_blue_mask;
+							col_states[x] = (col_states[x] | row_blue_mask) & ~row_green_mask;
 						}
 					}
 					else if (cursor_color == BLUE_LIGHT)
 					{
-						if ((col_states[x] & 0x00000100) != 0)
+						if ((col_states[x] & row_blue_mask) != 0)
 						{
-							col_states[x+1] = (col_states[x+1] | 0x00000100) & 0xFFFEFFFF;
-							col_states[x] = (col_states[x] | 0x00010000) & 0xFFFFFEFF;
+							col_states[x+1] = (col_states[x+1] | row_blue_mask) & ~row_green_mask;
+							col_states[x] = (col_states[x] | row_green_mask) & ~row_blue_mask;
 						}
 					}
 				}
@@ -520,18 +543,18 @@ void Player_Cursor()
 					++x;
 					if (cursor_color == GREEN_LIGHT)
 					{
-						if ((col_states[x] & 0x00010000) != 0)
+						if ((col_states[x] & row_green_mask) != 0)
 						{
-							col_states[x-1] = (col_states[x-1] | 0x00010000) & 0xFFFFFEFF;
-							col_states[x] = (col_states[x] | 0x00000100) & 0xFFFEFFFF;
+							col_states[x-1] = (col_states[x-1] | row_green_mask) & ~row_blue_mask;
+							col_states[x] = (col_states[x] | row_blue_mask) & ~row_green_mask;
 						}
 					}
 					else if (cursor_color == BLUE_LIGHT)
 					{
-						if ((col_states[x] & 0x00000100) != 0)
+						if ((col_states[x] & row_blue_mask) != 0)
 						{
-							col_states[x-1] = (col_states[x-1] | 0x00000100) & 0xFFFEFFFF;
-							col_states[x] = (col_states[x] | 0x00010000) & 0xFFFFFEFF;
+							col_states[x-1] = (col_states[x-1] | row_blue_mask) & ~row_green_mask;
+							col_states[x] = (col_states[x] | row_green_mask) & ~row_blue_mask;
 						}
 					}
 				}
@@ -540,10 +563,32 @@ void Player_Cursor()
 			{
 				if (y < 0x80)
 				{
-					y = y << 1;
-					cursor_green_mask = ((cursor_green_mask & 0xFF00FFFF) | ((cursor_green_mask << 1) | 0x00010000)) | ((cursor_green_mask << 1) & 0xFF000000); 
-					cursor_blue_mask = ((cursor_blue_mask & 0xFFFF00FF) | ((cursor_blue_mask << 1) | 0x00000100)) | ((cursor_blue_mask << 1) & 0xFF000000);
 					Cursor_State = Up_State;
+					row_green_mask = row_green_mask << 1;
+					row_blue_mask = row_blue_mask << 1;
+					y = y << 1;	
+					
+					if (cursor_color == GREEN_LIGHT)
+					{
+						if ((col_states[x] & row_green_mask) != 0x00000000)
+						{
+							col_states[x] = (col_states[x] & to_check_swap) | swap_green_to_blue;
+						}
+					}
+					else if (cursor_color == BLUE_LIGHT)
+					{
+						if ((col_states[x] & row_blue_mask) != 0x00000000)
+						{
+							col_states[x] = (col_states[x] & to_check_swap) | swap_blue_to_green;
+						}
+					}
+					
+					to_check_swap = (to_check_swap << 1) | 0x00000001;
+					swap_blue_to_green = swap_blue_to_green << 1;
+					swap_green_to_blue = swap_green_to_blue << 1;
+					cursor_green_mask = (cursor_green_mask & 0xFF00FFFF) | (cursor_green_mask << 1);
+					cursor_blue_mask = (cursor_blue_mask & 0xFFFF00FF) | (cursor_blue_mask << 1);
+					
 				}
 			}
 			else if ((button & Down_Button) == 0x00)
@@ -551,9 +596,30 @@ void Player_Cursor()
 				if (y > 0x01)
 				{
 					Cursor_State = Down_State;
+					row_green_mask = row_green_mask >> 1;
+					row_blue_mask = row_blue_mask >> 1;
+					to_check_swap = (to_check_swap >> 1) | 0x80000000;
+					swap_blue_to_green = swap_blue_to_green >> 1;
+					swap_green_to_blue = swap_green_to_blue >> 1;
 					y = y >> 1;
-					cursor_green_mask = ((cursor_green_mask & 0xFF00FFFF) | ((cursor_green_mask >> 1) | 0x00800000)) | ((cursor_green_mask >> 1) & 0xFF000000);
-					cursor_blue_mask = ((cursor_blue_mask & 0xFFFF00FF) | ((cursor_blue_mask >> 1) | 0x00008000)) | ((cursor_green_mask >> 1) & 0xFF000000);
+					
+					if (cursor_color == GREEN_LIGHT)
+					{
+						if ((col_states[x] & row_green_mask) != 0x00000000)
+						{
+							col_states[x] = (col_states[x] & to_check_swap) | swap_blue_to_green;
+						}
+					}
+					else if (cursor_color == BLUE_LIGHT)
+					{
+						if ((col_states[x] & row_blue_mask) != 0x00000000)
+						{
+							col_states[x] = (col_states[x] & to_check_swap) | swap_green_to_blue;
+						}
+					}
+					
+					cursor_green_mask = (cursor_green_mask & 0xFF00FFFF) | ((cursor_green_mask & 0x00FF0000) >> 1);
+					cursor_blue_mask = (cursor_blue_mask & 0xFFFF00FF) | ((cursor_blue_mask & 0x0000FF00) >> 1);
 				}
 			}
 			else
@@ -705,6 +771,7 @@ void Cursor_blinking()
 					col_states[x] = (col_states[x] & 0xFF000000) | (col_states[x] | (cursor_blue_mask & 0x00FFFFFF));
 				}	
 			}	
+			//The following would have the cursor continiously blink even if the user holds down a button.
 			if (((button & Left_Button) == 0x00 || 
 				 (button & Right_Button) == 0x00 || 
 				 (button & Up_Button) == 0x00 || 

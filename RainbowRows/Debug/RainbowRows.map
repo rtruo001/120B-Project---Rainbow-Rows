@@ -325,7 +325,7 @@ END GROUP
 .rela.plt
  *(.rela.plt)
 
-.text           0x00000000     0x1126
+.text           0x00000000     0x1598
  *(.vectors)
  .vectors       0x00000000       0x8c c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1051/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr51/crtm1284.o
                 0x00000000                __vector_default
@@ -380,106 +380,106 @@ END GROUP
  *(.init8)
  *(.init8)
  *(.init9)
- .init9         0x000000e4        0x6 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1051/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr51/crtm1284.o
+ .init9         0x000000e4        0x8 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1051/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr51/crtm1284.o
  *(.init9)
  *(.text)
- .text          0x000000ea        0x2 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1051/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr51/crtm1284.o
-                0x000000ea                __vector_22
-                0x000000ea                __vector_28
-                0x000000ea                __vector_1
-                0x000000ea                __vector_32
-                0x000000ea                __vector_34
-                0x000000ea                __vector_24
-                0x000000ea                __vector_12
-                0x000000ea                __bad_interrupt
-                0x000000ea                __vector_6
-                0x000000ea                __vector_31
-                0x000000ea                __vector_3
-                0x000000ea                __vector_23
-                0x000000ea                __vector_30
-                0x000000ea                __vector_25
-                0x000000ea                __vector_11
-                0x000000ea                __vector_17
-                0x000000ea                __vector_19
-                0x000000ea                __vector_7
-                0x000000ea                __vector_27
-                0x000000ea                __vector_5
-                0x000000ea                __vector_33
-                0x000000ea                __vector_4
-                0x000000ea                __vector_9
-                0x000000ea                __vector_2
-                0x000000ea                __vector_21
-                0x000000ea                __vector_15
-                0x000000ea                __vector_29
-                0x000000ea                __vector_8
-                0x000000ea                __vector_26
-                0x000000ea                __vector_14
-                0x000000ea                __vector_10
-                0x000000ea                __vector_16
-                0x000000ea                __vector_18
-                0x000000ea                __vector_20
-                0x000000ec                . = ALIGN (0x2)
+ .text          0x000000ec        0x2 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1051/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr51/crtm1284.o
+                0x000000ec                __vector_22
+                0x000000ec                __vector_28
+                0x000000ec                __vector_1
+                0x000000ec                __vector_32
+                0x000000ec                __vector_34
+                0x000000ec                __vector_24
+                0x000000ec                __vector_12
+                0x000000ec                __bad_interrupt
+                0x000000ec                __vector_6
+                0x000000ec                __vector_31
+                0x000000ec                __vector_3
+                0x000000ec                __vector_23
+                0x000000ec                __vector_30
+                0x000000ec                __vector_25
+                0x000000ec                __vector_11
+                0x000000ec                __vector_17
+                0x000000ec                __vector_19
+                0x000000ec                __vector_7
+                0x000000ec                __vector_27
+                0x000000ec                __vector_5
+                0x000000ec                __vector_33
+                0x000000ec                __vector_4
+                0x000000ec                __vector_9
+                0x000000ec                __vector_2
+                0x000000ec                __vector_21
+                0x000000ec                __vector_15
+                0x000000ec                __vector_29
+                0x000000ec                __vector_8
+                0x000000ec                __vector_26
+                0x000000ec                __vector_14
+                0x000000ec                __vector_10
+                0x000000ec                __vector_16
+                0x000000ec                __vector_18
+                0x000000ec                __vector_20
+                0x000000ee                . = ALIGN (0x2)
  *(.text.*)
- .text.TimerOn  0x000000ec       0x48 RainbowRows.o
-                0x000000ec                TimerOn
+ .text.TimerOn  0x000000ee       0x48 RainbowRows.o
+                0x000000ee                TimerOn
  .text.__vector_13
-                0x00000134       0x78 RainbowRows.o
-                0x00000134                __vector_13
- .text.transmit_data
-                0x000001ac       0x48 RainbowRows.o
-                0x000001ac                transmit_data
+                0x00000136       0x78 RainbowRows.o
+                0x00000136                __vector_13
  .text.NES_Controller
-                0x000001f4       0x8e RainbowRows.o
-                0x000001f4                NES_Controller
+                0x000001ae       0x8e RainbowRows.o
+                0x000001ae                NES_Controller
+ .text.transmit_data
+                0x0000023c       0x48 RainbowRows.o
+                0x0000023c                transmit_data
  .text.Init_LED
-                0x00000282      0x2c4 RainbowRows.o
-                0x00000282                Init_LED
+                0x00000284      0x2c6 RainbowRows.o
+                0x00000284                Init_LED
  .text.Starting_Game
-                0x00000546       0x88 RainbowRows.o
-                0x00000546                Starting_Game
+                0x0000054a       0x88 RainbowRows.o
+                0x0000054a                Starting_Game
  .text.LED_Matrix
-                0x000005ce      0x256 RainbowRows.o
-                0x000005ce                LED_Matrix
+                0x000005d2      0x256 RainbowRows.o
+                0x000005d2                LED_Matrix
  .text.Player_Cursor
-                0x00000824      0x476 RainbowRows.o
-                0x00000824                Player_Cursor
+                0x00000828      0x8de RainbowRows.o
+                0x00000828                Player_Cursor
  .text.Cursor_blinking
-                0x00000c9a      0x2a0 RainbowRows.o
-                0x00000c9a                Cursor_blinking
- .text.main     0x00000f3a       0x74 RainbowRows.o
-                0x00000f3a                main
- .text.libgcc   0x00000fae        0xc c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1051/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr51\libgcc.a(_tablejump.o)
-                0x00000fae                __tablejump2__
-                0x00000fb2                __tablejump__
+                0x00001106      0x2a0 RainbowRows.o
+                0x00001106                Cursor_blinking
+ .text.main     0x000013a6       0x7a RainbowRows.o
+                0x000013a6                main
+ .text.libgcc   0x00001420        0xc c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1051/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr51\libgcc.a(_tablejump.o)
+                0x00001420                __tablejump2__
+                0x00001424                __tablejump__
  .text.avr-libc
-                0x00000fba       0xae c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1051/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr51\libc.a(rand.o)
-                0x0000104a                rand_r
-                0x0000104c                rand
-                0x00001052                srand
+                0x0000142c       0xae c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1051/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr51\libc.a(rand.o)
+                0x000014bc                rand_r
+                0x000014be                rand
+                0x000014c4                srand
  .text.libgcc.div
-                0x00001068       0x28 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1051/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr51\libgcc.a(_divmodsi4.o)
-                0x00001068                __divmodsi4
+                0x000014da       0x28 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1051/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr51\libgcc.a(_divmodsi4.o)
+                0x000014da                __divmodsi4
  .text.libgcc.div
-                0x00001090       0x10 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1051/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr51\libgcc.a(_negsi2.o)
-                0x00001090                __negsi2
+                0x00001502       0x10 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1051/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr51\libgcc.a(_negsi2.o)
+                0x00001502                __negsi2
  .text.libgcc.mul
-                0x000010a0       0x14 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1051/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr51\libgcc.a(_muluhisi3.o)
-                0x000010a0                __muluhisi3
+                0x00001512       0x14 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1051/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr51\libgcc.a(_muluhisi3.o)
+                0x00001512                __muluhisi3
  .text.libgcc.mul
-                0x000010b4        0xc c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1051/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr51\libgcc.a(_mulshisi3.o)
-                0x000010b4                __mulshisi3
-                0x000010b8                __mulohisi3
+                0x00001526        0xc c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1051/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr51\libgcc.a(_mulshisi3.o)
+                0x00001526                __mulshisi3
+                0x0000152a                __mulohisi3
  .text.libgcc.div
-                0x000010c0       0x44 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1051/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr51\libgcc.a(_udivmodsi4.o)
-                0x000010c0                __udivmodsi4
+                0x00001532       0x44 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1051/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr51\libgcc.a(_udivmodsi4.o)
+                0x00001532                __udivmodsi4
  .text.libgcc.mul
-                0x00001104       0x1e c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1051/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr51\libgcc.a(_umulhisi3.o)
-                0x00001104                __umulhisi3
-                0x00001122                . = ALIGN (0x2)
+                0x00001576       0x1e c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1051/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr51\libgcc.a(_umulhisi3.o)
+                0x00001576                __umulhisi3
+                0x00001594                . = ALIGN (0x2)
  *(.fini9)
- .fini9         0x00001122        0x0 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1051/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr51\libgcc.a(_exit.o)
-                0x00001122                _exit
-                0x00001122                exit
+ .fini9         0x00001594        0x0 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1051/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr51\libgcc.a(_exit.o)
+                0x00001594                _exit
+                0x00001594                exit
  *(.fini9)
  *(.fini8)
  *(.fini8)
@@ -498,11 +498,11 @@ END GROUP
  *(.fini1)
  *(.fini1)
  *(.fini0)
- .fini0         0x00001122        0x4 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1051/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr51\libgcc.a(_exit.o)
+ .fini0         0x00001594        0x4 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1051/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr51\libgcc.a(_exit.o)
  *(.fini0)
-                0x00001126                _etext = .
+                0x00001598                _etext = .
 
-.data           0x00800100       0x3a load address 0x00001126
+.data           0x00800100       0x4e load address 0x00001598
                 0x00800100                PROVIDE (__data_start, .)
  *(.data)
  .data          0x00800100        0x0 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1051/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr51/crtm1284.o
@@ -528,68 +528,83 @@ END GROUP
  .data.cursor_color
                 0x00800108        0x1 RainbowRows.o
                 0x00800108                cursor_color
- .data.cursor_blue_mask
+ .data.swap_blue_to_green
                 0x00800109        0x4 RainbowRows.o
-                0x00800109                cursor_blue_mask
- .data.cursor_green_mask
+                0x00800109                swap_blue_to_green
+ .data.swap_green_to_blue
                 0x0080010d        0x4 RainbowRows.o
-                0x0080010d                cursor_green_mask
- .data.y        0x00800111        0x2 RainbowRows.o
-                0x00800111                y
+                0x0080010d                swap_green_to_blue
+ .data.to_check_swap
+                0x00800111        0x4 RainbowRows.o
+                0x00800111                to_check_swap
+ .data.row_blue_mask
+                0x00800115        0x4 RainbowRows.o
+                0x00800115                row_blue_mask
+ .data.row_green_mask
+                0x00800119        0x4 RainbowRows.o
+                0x00800119                row_green_mask
+ .data.cursor_blue_mask
+                0x0080011d        0x4 RainbowRows.o
+                0x0080011d                cursor_blue_mask
+ .data.cursor_green_mask
+                0x00800121        0x4 RainbowRows.o
+                0x00800121                cursor_green_mask
+ .data.y        0x00800125        0x2 RainbowRows.o
+                0x00800125                y
  .data.col_states
-                0x00800113       0x20 RainbowRows.o
-                0x00800113                col_states
+                0x00800127       0x20 RainbowRows.o
+                0x00800127                col_states
  .data.seed_randomize
-                0x00800133        0x2 RainbowRows.o
-                0x00800133                seed_randomize
+                0x00800147        0x2 RainbowRows.o
+                0x00800147                seed_randomize
  .data._avr_timer_M
-                0x00800135        0x4 RainbowRows.o
-                0x00800135                _avr_timer_M
+                0x00800149        0x4 RainbowRows.o
+                0x00800149                _avr_timer_M
  *(.rodata)
  *(.rodata*)
  *(.gnu.linkonce.d*)
-                0x0080013a                . = ALIGN (0x2)
- *fill*         0x00800139        0x1 
-                0x0080013a                _edata = .
-                0x0080013a                PROVIDE (__data_end, .)
+                0x0080014e                . = ALIGN (0x2)
+ *fill*         0x0080014d        0x1 
+                0x0080014e                _edata = .
+                0x0080014e                PROVIDE (__data_end, .)
 
-.bss            0x0080013a       0x13
-                0x0080013a                PROVIDE (__bss_start, .)
+.bss            0x0080014e       0x13
+                0x0080014e                PROVIDE (__bss_start, .)
  *(.bss)
  *(.bss*)
- .bss.x         0x0080013a        0x1 RainbowRows.o
-                0x0080013a                x
+ .bss.x         0x0080014e        0x1 RainbowRows.o
+                0x0080014e                x
  .bss.display_lights
-                0x0080013b        0x4 RainbowRows.o
-                0x0080013b                display_lights
+                0x0080014f        0x4 RainbowRows.o
+                0x0080014f                display_lights
  .bss.state_of_game
-                0x0080013f        0x2 RainbowRows.o
-                0x0080013f                state_of_game
- .bss.button    0x00800141        0x2 RainbowRows.o
-                0x00800141                button
+                0x00800153        0x2 RainbowRows.o
+                0x00800153                state_of_game
+ .bss.button    0x00800155        0x2 RainbowRows.o
+                0x00800155                button
  .bss._avr_timer_cntcurr
-                0x00800143        0x4 RainbowRows.o
-                0x00800143                _avr_timer_cntcurr
+                0x00800157        0x4 RainbowRows.o
+                0x00800157                _avr_timer_cntcurr
  .bss.TimerFlag
-                0x00800147        0x1 RainbowRows.o
-                0x00800147                TimerFlag
+                0x0080015b        0x1 RainbowRows.o
+                0x0080015b                TimerFlag
  *(COMMON)
- COMMON         0x00800148        0x5 RainbowRows.o
-                0x00800148                LED_State
-                0x00800149                Cursor_State
-                0x0080014a                NES_state
-                0x0080014b                Game_State
-                0x0080014c                Blink_State
-                0x0080014d                PROVIDE (__bss_end, .)
-                0x00001126                __data_load_start = LOADADDR (.data)
-                0x00001160                __data_load_end = (__data_load_start + SIZEOF (.data))
+ COMMON         0x0080015c        0x5 RainbowRows.o
+                0x0080015c                LED_State
+                0x0080015d                Cursor_State
+                0x0080015e                NES_state
+                0x0080015f                Game_State
+                0x00800160                Blink_State
+                0x00800161                PROVIDE (__bss_end, .)
+                0x00001598                __data_load_start = LOADADDR (.data)
+                0x000015e6                __data_load_end = (__data_load_start + SIZEOF (.data))
 
-.noinit         0x0080014d        0x0
-                0x0080014d                PROVIDE (__noinit_start, .)
+.noinit         0x00800161        0x0
+                0x00800161                PROVIDE (__noinit_start, .)
  *(.noinit*)
-                0x0080014d                PROVIDE (__noinit_end, .)
-                0x0080014d                _end = .
-                0x0080014d                PROVIDE (__heap_start, .)
+                0x00800161                PROVIDE (__noinit_end, .)
+                0x00800161                _end = .
+                0x00800161                PROVIDE (__heap_start, .)
 
 .eeprom         0x00810000        0x0
  *(.eeprom*)
@@ -657,30 +672,30 @@ END GROUP
 .debug_pubnames
  *(.debug_pubnames)
 
-.debug_info     0x00000000      0x759
+.debug_info     0x00000000      0x7b8
  *(.debug_info .gnu.linkonce.wi.*)
- .debug_info    0x00000000      0x759 RainbowRows.o
+ .debug_info    0x00000000      0x7b8 RainbowRows.o
 
 .debug_abbrev   0x00000000      0x294
  *(.debug_abbrev)
  .debug_abbrev  0x00000000      0x294 RainbowRows.o
 
-.debug_line     0x00000000      0x7ed
+.debug_line     0x00000000      0x872
  *(.debug_line .debug_line.* .debug_line_end)
- .debug_line    0x00000000      0x7ed RainbowRows.o
+ .debug_line    0x00000000      0x872 RainbowRows.o
 
-.debug_frame    0x00000000      0x194
+.debug_frame    0x00000000      0x1c4
  *(.debug_frame)
- .debug_frame   0x00000000      0x194 RainbowRows.o
+ .debug_frame   0x00000000      0x1c4 RainbowRows.o
 
-.debug_str      0x00000000      0x538
+.debug_str      0x00000000      0x589
  *(.debug_str)
- .debug_str     0x00000000      0x538 RainbowRows.o
-                                0x5a1 (size before relaxing)
+ .debug_str     0x00000000      0x589 RainbowRows.o
+                                0x5f2 (size before relaxing)
 
-.debug_loc      0x00000000      0x47d
+.debug_loc      0x00000000      0x4ff
  *(.debug_loc)
- .debug_loc     0x00000000      0x47d RainbowRows.o
+ .debug_loc     0x00000000      0x4ff RainbowRows.o
 
 .debug_macinfo
  *(.debug_macinfo)
