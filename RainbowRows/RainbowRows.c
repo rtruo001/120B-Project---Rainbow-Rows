@@ -477,8 +477,6 @@ void Player_Cursor()
 	switch(Cursor_State)
 	{
 		case Cursor_Init:
-			break;
-		case Wait_For_Buttons:
 			if ((col_states[x] & cursor_green_mask) == 0x01000000)
 			{
 				cursor_color = GREEN_LIGHT;
@@ -488,12 +486,30 @@ void Player_Cursor()
 				cursor_color = BLUE_LIGHT;
 			}
 			Cursor_State = Wait_For_Buttons;
+			break;
+		case Wait_For_Buttons:
 			if ((button & Left_Button) == 0x00)
 			{
 				if (x > 0)
 				{
 					Cursor_State = Left_State;
 					--x;
+					if (cursor_color == GREEN_LIGHT)
+					{
+						if ((col_states[x] & 0x00010000) != 0)
+						{
+							col_states[x+1] = (col_states[x+1] | 0x00010000) & 0xFFFFFEFF;
+							col_states[x] = (col_states[x] | 0x00000100) & 0xFFFEFFFF;
+						}
+					}
+					else if (cursor_color == BLUE_LIGHT)
+					{
+						if ((col_states[x] & 0x00000100) != 0)
+						{
+							col_states[x+1] = (col_states[x+1] | 0x00000100) & 0xFFFEFFFF;
+							col_states[x] = (col_states[x] | 0x00010000) & 0xFFFFFEFF;
+						}
+					}
 				}
 			}
 			else if ((button & Right_Button) == 0x00)
@@ -502,6 +518,22 @@ void Player_Cursor()
 				{
 					Cursor_State = Right_State;
 					++x;
+					if (cursor_color == GREEN_LIGHT)
+					{
+						if ((col_states[x] & 0x00010000) != 0)
+						{
+							col_states[x-1] = (col_states[x-1] | 0x00010000) & 0xFFFFFEFF;
+							col_states[x] = (col_states[x] | 0x00000100) & 0xFFFEFFFF;
+						}
+					}
+					else if (cursor_color == BLUE_LIGHT)
+					{
+						if ((col_states[x] & 0x00000100) != 0)
+						{
+							col_states[x-1] = (col_states[x-1] | 0x00000100) & 0xFFFEFFFF;
+							col_states[x] = (col_states[x] | 0x00010000) & 0xFFFFFEFF;
+						}
+					}
 				}
 			}
 			else if ((button & Up_Button) == 0x00)
@@ -510,7 +542,7 @@ void Player_Cursor()
 				{
 					y = y << 1;
 					cursor_green_mask = ((cursor_green_mask & 0xFF00FFFF) | ((cursor_green_mask << 1) | 0x00010000)) | ((cursor_green_mask << 1) & 0xFF000000); 
-					cursor_blue_mask = ((cursor_blue_mask & 0xFFFF00FF) | ((cursor_blue_mask << 1) | 0x00000100)) | ((cursor_blue_mask << 1) & 0xFF000000); ;
+					cursor_blue_mask = ((cursor_blue_mask & 0xFFFF00FF) | ((cursor_blue_mask << 1) | 0x00000100)) | ((cursor_blue_mask << 1) & 0xFF000000);
 					Cursor_State = Up_State;
 				}
 			}
@@ -603,8 +635,8 @@ void Player_Cursor()
 	}
 }
 
-unsigned short BLINK_TIME = 250;
-unsigned short blink_count = 250;
+unsigned short BLINK_TIME = 175;
+unsigned short blink_count = 175;
 enum Blink_States {Blink_Init, Light_On, Light_Off} Blink_State;
 void Cursor_blinking()
 {
@@ -662,18 +694,7 @@ void Cursor_blinking()
 			}
 			break;
 		case Light_Off:
-			if ((button & Left_Button) == 0x00 || (button & Right_Button) == 0x00 || (button & Up_Button) == 0x00 || (button & Down_Button) == 0x00)
-			{
-				if (cursor_color == GREEN_LIGHT)
-				{
-					col_states[x] = (col_states[x] & 0xFF000000) | (col_states[x] & (~cursor_green_mask & 0x00FFFFFF));
-				}
-				else if (cursor_color == BLUE_LIGHT)
-				{
-					col_states[x] = (col_states[x] & 0xFF000000) | (col_states[x] & (~cursor_blue_mask & 0x00FFFFFF));
-				}
-			}
-			else if (blink_count == BLINK_TIME)
+			if (blink_count == BLINK_TIME)
 			{
 				if (cursor_color == GREEN_LIGHT)
 				{
@@ -682,6 +703,21 @@ void Cursor_blinking()
 				else if (cursor_color == BLUE_LIGHT)
 				{
 					col_states[x] = (col_states[x] & 0xFF000000) | (col_states[x] | (cursor_blue_mask & 0x00FFFFFF));
+				}	
+			}	
+			if (((button & Left_Button) == 0x00 || 
+				 (button & Right_Button) == 0x00 || 
+				 (button & Up_Button) == 0x00 || 
+				 (button & Down_Button) == 0x00) && Cursor_State == Wait_For_Buttons)
+			{
+				
+				if (cursor_color == GREEN_LIGHT)
+				{
+					col_states[x] = (col_states[x] & 0xFF000000) | (col_states[x] & (~cursor_green_mask & 0x00FFFFFF));
+				}
+				else if (cursor_color == BLUE_LIGHT)
+				{
+					col_states[x] = (col_states[x] & 0xFF000000) | (col_states[x] & (~cursor_blue_mask & 0x00FFFFFF));
 				}
 			}
 		default:
@@ -760,8 +796,8 @@ int main(void)
 		else
 		{
 			LED_Matrix();
-			Player_Cursor();
 			Cursor_blinking();
+			Player_Cursor();
 			transmit_data(display_lights & 0xFFFFFFFF);
 		}
 		while (!TimerFlag);
