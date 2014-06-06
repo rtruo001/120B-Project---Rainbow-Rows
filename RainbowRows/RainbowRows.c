@@ -11,11 +11,173 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <avr/interrupt.h>
+#include "io.c"
 
+/*************************************************VARIABLES*************************************************************************/
+/*************************************************VARIABLES*************************************************************************/
+/*************************************************VARIABLES*************************************************************************/
+//States for the function to use.
+enum To_Start_Game_State {Game_Init, Game_Wait, Game_Start, Ending, Game_Reset} Game_State;	
+//The states of the LED matrix, displaying a column at a time.
+enum LED_States{LED_Init,
+	col0, col0_off,
+	col1, col1_off,
+	col2, col2_off,
+	col3, col3_off,
+	col4, col4_off,
+	col5, col5_off,
+	col6, col6_off,
+	col7, col7_off
+} LED_State;
+//States of the cursor
+enum Cursor_States{Cursor_Init, Wait_For_Buttons, Up_State, Down_State, Left_State, Right_State} Cursor_State;
+//States of the blinking
+enum Blink_States {Blink_Init, Light_On, Light_Off} Blink_State;
 
+signed long Timer_to_End = 24000;
+
+//This variable starts the entire process of randomizing for the LED matrix.
+//The seed would be used with the rand() function to choose Red, Green, or Blue for the color.
+signed short seed_randomize = 1;
+
+//The Red mask would be used if the red color was used in the game.
+//const unsigned char RED_LIGHT = 0;
+const unsigned char GREEN_LIGHT = 0;
+const unsigned char BLUE_LIGHT = 1;
+
+//The bytes of each column.
+signed long col_states[8] = {0x01FFFFFF, 0x02FFFFFF, 0x04FFFFFF, 0x08FFFFFF, 0x10FFFFFF, 0x20FFFFFF, 0x40FFFFFF, 0x80FFFFFF};
+
+//Amount of full rows and columns
+signed char points = 0;
+
+//This variable would start the entire process of the actual game when it changes to 1
+//It will only change to 1 if the user pushes start at the beginning.
+unsigned short state_of_game = 0;
+
+//This variable would choose which column the LED Matrix would display
+signed long display_lights = 0x00000000;
+
+unsigned char x = 0;
+unsigned short y = 0x01;
+
+//Used for manipulation of the cursor and moving it.
+signed long cursor_green_mask = 0x01010000;
+signed long	cursor_blue_mask = 0x01000100;
+signed long row_green_mask = 0x00010000;
+signed long row_blue_mask = 0x00000100;
+signed long to_check_swap = 0xFFFCFCFF;
+signed long swap_green_to_blue = 0x00010200;
+signed long swap_blue_to_green = 0x00020100;
+unsigned char cursor_color = -1;
+
+//Timing set for the blinking.
+unsigned short BLINK_TIME = 150;
+unsigned short blink_count = 150;
+
+/*************************************************VARIABLES*************************************************************************/
+/*************************************************VARIABLES*************************************************************************/
+/*************************************************VARIABLES*************************************************************************/
+
+/***********************************************************************************************************************************/
+
+//Reinitializes all the variables for reset.
+void Reinitialization()
+{
+	Game_State = Game_Init;
+	LED_State = LED_Init;
+	Cursor_State = Cursor_Init;
+	Blink_State = Blink_Init;
+	
+	Timer_to_End = 24000;
+
+	//This variable starts the entire process of randomizing for the LED matrix.
+	//The seed would be used with the rand() function to choose Red, Green, or Blue for the color.
+	seed_randomize = 1;
+
+	//The bytes of each column.
+	col_states[0] = 0x01FFFFFF;
+	col_states[1] = 0x02FFFFFF;
+	col_states[2] = 0x04FFFFFF;
+	col_states[3] = 0x08FFFFFF;
+	col_states[4] = 0x10FFFFFF;
+	col_states[5] = 0x20FFFFFF;
+	col_states[6] = 0x40FFFFFF;
+	col_states[7] = 0x80FFFFFF;
+
+	//Amount of full rows and columns
+	points = 0;
+
+	//This variable would start the entire process of the actual game when it changes to 1
+	//It will only change to 1 if the user pushes start at the beginning.
+	state_of_game = 0;
+
+	//This variable would choose which column the LED Matrix would display
+	display_lights = 0x00000000;
+
+	x = 0;
+	y = 0x01;
+
+	//Used for manipulation of the cursor and moving it.
+	cursor_green_mask = 0x01010000;
+	cursor_blue_mask = 0x01000100;
+	row_green_mask = 0x00010000;
+	row_blue_mask = 0x00000100;
+	to_check_swap = 0xFFFCFCFF;
+	swap_green_to_blue = 0x00010200;
+	swap_blue_to_green = 0x00020100;
+	cursor_color = -1;
+
+	//Timing set for the blinking.
+	BLINK_TIME = 150;
+	blink_count = 150;	
+}
+
+//Counts the points by counting how many rows the user made. Only vertical orbs of 3 or more of the same color would count as rows.
+void Count_Points()
+{
+	signed long green_point_mask = 0x00800000;
+	signed long blue_point_mask = 0x00008000;
+	
+	for (unsigned char i = 0; i < 8; ++i)
+	{
+		if ((col_states[i] & 0x00FF0000) == 0x00000000 || (col_states[i] & 0x0000FF00) == 0x00000000)
+		{
+			++points;
+		}
+	}
+
+	for (unsigned char j = 0; j < 8; j++)
+	{
+		if ((col_states[0] & green_point_mask) == 0 &&
+		(col_states[1] & green_point_mask) == 0 &&
+		(col_states[2] & green_point_mask) == 0 &&
+		(col_states[3] & green_point_mask) == 0 &&
+		(col_states[4] & green_point_mask) == 0 &&
+		(col_states[5] & green_point_mask) == 0 &&
+		(col_states[6] & green_point_mask) == 0 &&
+		(col_states[7] & green_point_mask) == 0)
+		{
+			++points;
+		}
+		else if ((col_states[0] & blue_point_mask) == 0 &&
+		(col_states[1] & blue_point_mask) == 0 &&
+		(col_states[2] & blue_point_mask) == 0 &&
+		(col_states[3] & blue_point_mask) == 0 &&
+		(col_states[4] & blue_point_mask) == 0 &&
+		(col_states[5] & blue_point_mask) == 0 &&
+		(col_states[6] & blue_point_mask) == 0 &&
+		(col_states[7] & blue_point_mask) == 0)
+		{
+			++points;
+		}
+		green_point_mask = green_point_mask >> 1;
+		blue_point_mask = blue_point_mask >> 1;
+	}
+}
 
 /*******************************************NES CONTROLLER**************************************************/
-enum NES_states {NES_Init,
+/*enum NES_states {NES_Init,
 				 A1, A0,
 				 B1, B0,
 				 Select1, Select0,
@@ -24,7 +186,7 @@ enum NES_states {NES_Init,
 				 Down1, Down0, 
 				 Left1, Left0, 
 				 Right1, Right0} NES_state;
-
+*/
 /*
 button would be used throughout the entire program.
 Would be the source in describing which button is pressed.
@@ -107,61 +269,6 @@ void transmit_data(signed long data) {
 	PORTB = 0x00;
 }
 
-// ====================
-// SM1: DEMO LED matrix
-// ====================
-enum SM1_States {sm1_display};
-int SM1_Tick(int state) {
-
-	// === Local Variables ===
-	static unsigned char column_val = 0x01; // sets the pattern displayed on columns
-	static unsigned char column_sel = 0x7F; // grounds column to display pattern
-	
-	// === Transitions ===
-	switch (state) {
-		case sm1_display:    break;
-		default:   	        state = sm1_display;
-		break;
-	}
-	
-	// === Actions ===
-	switch (state) {
-		PORTC = 0x00;
-		PORTA = 0x00;
-		case sm1_display:   // If illuminated LED in bottom right corner
-		if (column_sel == 0xFE && column_val == 0x80) {
-			column_sel = 0x7F; // display far left column
-			column_val = 0x01; // pattern illuminates top row
-		}
-		// else if far right column was last to display (grounded)
-		else if (column_sel == 0xFE) {
-			column_sel = 0x7F; // resets display column to far left column
-			column_val = column_val << 1; // shift down illuminated LED one row
-		}
-		// else Shift displayed column one to the right
-		else {
-			column_sel = (column_sel >> 1) | 0x80;
-		}
-		break;
-		default:   	        break;
-	}
-	
-	PORTC = column_val; // PORTA displays column pattern
-	PORTA = column_sel; // PORTB selects column to display pattern
-
-	return state;
-}
-
-//This variable starts the entire process of randomizing for the LED matrix.
-//The seed would be used with the rand() function to choose Red, Green, or Blue for the color.
-signed short seed_randomize = 1;
-
-//The Red mask would be used if the red color was used in the game.
-//const unsigned char RED_LIGHT = 0;
-const unsigned char GREEN_LIGHT = 0;
-const unsigned char BLUE_LIGHT = 1;
-
-signed long col_states[8] = {0x01FFFFFF, 0x02FFFFFF, 0x04FFFFFF, 0x08FFFFFF, 0x10FFFFFF, 0x20FFFFFF, 0x40FFFFFF, 0x80FFFFFF};
 void Init_LED()
 {
 	//Restarts and initializes all the columns to their basic state.
@@ -232,22 +339,20 @@ void Init_LED()
 	}
 }
 
+const unsigned char press_start[] = "Press Start";
 /***********************************************************************
  *Function void Starting_Game()
  *The state machine in where you start the game by pushing start
  *If don't push start, will continue to wait until user push starts
 ************************************************************************/
-//States for the function to use.
-enum To_Start_Game_State {Game_Init, Game_Wait, Game_Start} Game_State;
-//This variable would start the entire process of the actual game when it changes to 1
-//It will only change to 1 if the user pushes start at the beginning.
-unsigned short state_of_game = 0;
 void Starting_Game()
 {
 	//Transitions
 	switch(Game_State)
 	{
 		case Game_Init:
+			Reinitialization();
+			LCD_DisplayString(1, press_start);
 			Game_State = Game_Wait;
 			break;
 		case Game_Wait:
@@ -274,9 +379,29 @@ void Starting_Game()
 			}
 			break;
 		case Game_Start:
-			if (state_of_game == 0)
+			if (Timer_to_End <= 0)
+			{
+				Game_State = Ending;
+				state_of_game = 0;
+				Count_Points();
+			}
+			else
+			{
+				Game_State = Game_Start;
+			}
+			--Timer_to_End;
+			break;
+		case Ending:
+			Game_State = Game_Reset;
+			break;
+		case Game_Reset:
+			if ((button & A_Button) == 0x00)
 			{
 				Game_State = Game_Init;
+			}
+			else
+			{
+				Game_State = Game_Reset;
 			}
 			break;
 		default:
@@ -290,8 +415,22 @@ void Starting_Game()
 		case Game_Init:
 			break;
 		case Game_Wait:
+			//Just the intro lighting sequence, green on top, blue on the bottom.
+			transmit_data(0xFF7FFEFF);
 			break;
 		case Game_Start:
+			break;
+		case Ending:
+			transmit_data(0xFF7FFEFF);
+			LCD_ClearScreen();
+			unsigned char message1[] = "Total Rows: ";
+			unsigned char message2[] = "Reset: Press A";
+			LCD_DisplayString(1, message1);
+			LCD_DisplayString(16, message2);
+			LCD_Cursor(12);
+			LCD_WriteData(points + 48);	
+			break;
+		case Game_Reset:
 			break;
 		default:
 			break;
@@ -307,20 +446,6 @@ void Starting_Game()
   Does this by setting display_lights to the column it will display. Then turning off the columns
   to prevent trailing lights. 
  *************************************************************************************************/
-//This variable would choose which column the LED Matrix would display
-signed long display_lights = 0x00000000;
-//The states of the LED matrix, displaying a column at a time.
-enum LED_States{LED_Init, 
-				col0, col0_off,
-				col1, col1_off,
-				col2, col2_off,
-				col3, col3_off,
-				col4, col4_off,
-				col5, col5_off,
-				col6, col6_off,
-				col7, col7_off
-				} LED_State;
-	
 void LED_Matrix()
 {
 	//Transitions
@@ -328,7 +453,14 @@ void LED_Matrix()
 	switch(LED_State)
 	{
 		case LED_Init:
-			LED_State = col0;
+			if (state_of_game == 0)
+			{
+				LED_State = LED_Init;
+			}
+			else
+			{
+				LED_State = col0;
+			}
 			break;
 		case col0:
 			LED_State = col0_off;
@@ -481,34 +613,28 @@ y	row3  B    B	 ...
 	and then turn on and off the colors position by manipulating the bits with y.
 	When user pushes left or right, it will just shift the col_state[x-1 or x+1].
 	**********************************************************************************/
-	
-unsigned char x = 0;
-unsigned short y = 0x01;
-
-signed long cursor_green_mask = 0x01010000;
-signed long	cursor_blue_mask = 0x01000100;
-signed long row_green_mask = 0x00010000;
-signed long row_blue_mask = 0x00000100;
-signed long to_check_swap = 0xFFFCFCFF;
-signed long swap_green_to_blue = 0x00010200;
-signed long swap_blue_to_green = 0x00020100;
-unsigned char cursor_color = -1;
-enum Cursor_States{Cursor_Init, Wait_For_Buttons, Up_State, Down_State, Left_State, Right_State} Cursor_State;
 void Player_Cursor()
 {
 	//Transitions
 	switch(Cursor_State)
 	{
 		case Cursor_Init:
-			if ((col_states[x] & cursor_green_mask) == 0x01000000)
+			if (state_of_game == 0)
 			{
-				cursor_color = GREEN_LIGHT;
+				Cursor_State = Cursor_Init;
 			}
-			else if ((col_states[x] & cursor_blue_mask) == 0x01000000)
+			else
 			{
-				cursor_color = BLUE_LIGHT;
+				if ((col_states[x] & cursor_green_mask) == 0x01000000)
+				{
+					cursor_color = GREEN_LIGHT;
+				}
+				else if ((col_states[x] & cursor_blue_mask) == 0x01000000)
+				{
+					cursor_color = BLUE_LIGHT;
+				}
+				Cursor_State = Wait_For_Buttons;
 			}
-			Cursor_State = Wait_For_Buttons;
 			break;
 		case Wait_For_Buttons:
 			if ((button & Left_Button) == 0x00)
@@ -701,16 +827,20 @@ void Player_Cursor()
 	}
 }
 
-unsigned short BLINK_TIME = 175;
-unsigned short blink_count = 175;
-enum Blink_States {Blink_Init, Light_On, Light_Off} Blink_State;
 void Cursor_blinking()
 {
 	//Transitions
 	switch(Blink_State)
 	{
 		case Blink_Init:
-			Blink_State = Light_On;
+			if (state_of_game == 0)
+			{
+				Blink_State = Blink_Init;
+			}
+			else
+			{
+				Blink_State = Light_On;
+			}
 			break;
 		case Light_On:
 			if (blink_count <= 0)
@@ -792,6 +922,15 @@ void Cursor_blinking()
 	}
 }
 
+void State_Machines()
+{
+	NES_Controller();
+	Starting_Game();
+	LED_Matrix();
+	Cursor_blinking();
+	Player_Cursor();
+	transmit_data(display_lights & 0xFFFFFFFF);
+}
 /*******************************************************************************
 NOTES:
 Example of what bits represent what
@@ -833,9 +972,9 @@ PS: Green mostly overpowers the other colors.
 ************************************************************************************/
 int main(void)
 {
-	//DDRA = 0xFF; PORTA = 0x00;
+	DDRA = 0xFF; PORTA = 0x00;
 	DDRB = 0xFF; PORTB = 0x00;
-	//DDRC = 0xFF; PORTC = 0x00;
+	DDRC = 0xFF; PORTC = 0x00;
 	DDRD = 0xFE; PORTD = 0x01;
 	
 	
@@ -843,10 +982,15 @@ int main(void)
 	//unsigned char add = -1;
 	//unsigned char LED = 0xFF;
 	
+	LCD_init();
+	
 	TimerSet(1);
 	TimerOn();
 	//int state = sm1_display;
+	Game_State = Game_Init;
 	LED_State = LED_Init;
+	Cursor_State = Cursor_Init;
+	Blink_State = Blink_Init;
     while(1)
     {
 		/*TODO
@@ -855,18 +999,7 @@ int main(void)
 		state_of_game = 0;
 		
 		*/
-		NES_Controller();
-		if (state_of_game == 0)
-		{
-			Starting_Game();
-		}
-		else
-		{
-			LED_Matrix();
-			Cursor_blinking();
-			Player_Cursor();
-			transmit_data(display_lights & 0xFFFFFFFF);
-		}
+		State_Machines();
 		while (!TimerFlag);
 		TimerFlag = 0;
 		
