@@ -2,7 +2,8 @@
  * Pretesting.c
  *
  * Created: 5/21/2014 11:36:36 AM
- *  Author: Randy
+ *  Author: Randy Truong
+ *  Custom lab Proposal: Rainbow Rows (Connect 8)
  */ 
 
 
@@ -17,7 +18,7 @@
 /*************************************************VARIABLES*************************************************************************/
 /*************************************************VARIABLES*************************************************************************/
 //States for the function to use.
-enum To_Start_Game_State {Game_Init, Game_Wait, Game_Start, Ending, Game_Reset} Game_State;	
+enum To_Start_Game_State {Game_Init, Game_Wait, Game_LCD, Game_Start, Ending, Game_Reset} Game_State;	
 //The states of the LED matrix, displaying a column at a time.
 enum LED_States{LED_Init,
 	col0, col0_off,
@@ -208,6 +209,10 @@ const unsigned short Down_Button = 0x40;
 const unsigned short Left_Button = 0x80;
 const unsigned short Right_Button = 0x01;
 
+/************************************************************************/
+//How it works is that it has 2 inputs and 1 output, the 2 inputs would receive the latch which would send information
+//its shift register, therefore every pulse would generate the different buttons from the controller, being outputted
+//from the Data pin.
 void NES_Controller()
 {	
 	unsigned char NES_latch = 0;
@@ -269,6 +274,7 @@ void transmit_data(signed long data) {
 	PORTB = 0x00;
 }
 
+//This function randomizes the LED at the very beginning.
 void Init_LED()
 {
 	//Restarts and initializes all the columns to their basic state.
@@ -371,12 +377,15 @@ void Starting_Game()
 				//Initializes the seed for the random.
 				srand(seed_randomize);
 				Init_LED();
-				Game_State = Game_Start;
+				Game_State = Game_LCD;
 			}
 			else
 			{
 				Game_State = Game_Wait;
 			}
+			break;
+		case Game_LCD:
+			Game_State = Game_Start;
 			break;
 		case Game_Start:
 			if (Timer_to_End <= 0)
@@ -418,15 +427,19 @@ void Starting_Game()
 			//Just the intro lighting sequence, green on top, blue on the bottom.
 			transmit_data(0xFF7FFEFF);
 			break;
+		case Game_LCD:
+			LCD_ClearScreen();
+			unsigned char game_message[] = "Move the orbs!      Make rows";
+			LCD_DisplayString(1, game_message);
+			break;
 		case Game_Start:
 			break;
 		case Ending:
-			transmit_data(0xFF7FFEFF);
+			transmit_data(0);
+			transmit_data(0xFFFFFF00);
 			LCD_ClearScreen();
-			unsigned char message1[] = "Total Rows: ";
-			unsigned char message2[] = "Reset: Press A";
-			LCD_DisplayString(1, message1);
-			LCD_DisplayString(16, message2);
+			unsigned char message[] = "Total Rows:     Reset: Press A";
+			LCD_DisplayString(1, message);
 			LCD_Cursor(12);
 			LCD_WriteData(points + 48);	
 			break;
